@@ -1,10 +1,27 @@
-const mongoose = require('mongoose');
-const goalSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  title: String,
-  description: String,
-  frequency: { type: String, enum: ['daily', 'weekly'] },
-  startDate: Date,
-  endDate: Date,
-});
-module.exports = mongoose.model('Goal', goalSchema);
+const { Sequelize, DataTypes } = require("sequelize");
+const sequelize = require("../utils/sequerize");
+
+const Goal = sequelize.define(
+  "Goal",  {
+  title: {
+    type: DataTypes.STRING,
+  },
+  description: {
+    type: DataTypes.TEXT,
+  },
+  startDate: {
+    type: DataTypes.DATE,
+  },
+  endDate: {
+    type: DataTypes.DATE,
+  },
+  userId: {
+    type: DataTypes.STRING, // Update this to match the data type of the id column in the User table
+  },
+}, 
+{
+  timestamps: true,
+}
+);
+
+module.exports = Goal;
