@@ -1,23 +1,28 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { registerUser } from '../helpers/fetchApi';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      setError("Passwords don't match!");
       return;
     }
-    // Here, you would typically send registration data to your backend API
-    console.log('Register attempt:', { name, email, password });
-    // On successful registration
-    navigate('/login'); // Redirect to login after successful registration
+    try {
+      await registerUser(name, email, password);
+      navigate('/login');
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    }
   };
 
   return (
@@ -100,6 +105,11 @@ const RegisterPage = () => {
               Register
             </button>
           </div>
+          {error && (
+            <div className="text-red-600 text-sm mt-2 text-center">
+              {error}
+            </div>
+          )}
         </form>
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
