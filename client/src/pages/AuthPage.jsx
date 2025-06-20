@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import { loginUser, registerUser } from '../helpers/fetchApi';
+
 const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -12,6 +14,7 @@ const AuthPage = () => {
     password: '',
     confirmPassword: '',
   });
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -23,11 +26,62 @@ const AuthPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(isLoginMode ? 'Login Data:' : 'Register Data:', formData);
-    alert(`Successfully ${isLoginMode ? 'logged in' : 'registered'}!`);
-    navigate('/dashboard');
+    setError('');
+      try {
+        if (isLoginMode) {
+          let response;
+          try {
+            response = await loginUser(formData.email, formData.password);
+            console.log('Login response:', response);
+          } catch (loginError) {
+            console.error('Login error:', loginError);
+            setError(`Login error: ${loginError.message || loginError}`);
+            return;
+          }
+          const token = response.data?.token || response.data || response.token;
+          if (token) {
+            localStorage.setItem('token', token);
+            navigate('/dashboard');
+          } else {
+            setError('Login failed: No token received');
+          }
+        } else {
+          if (formData.password !== formData.confirmPassword) {
+            setError("Passwords don't match!");
+            return;
+          }
+          let registerResponse;
+          try {
+            registerResponse = await registerUser(formData.name, formData.email, formData.password);
+            console.log('Register response:', registerResponse);
+          } catch (registerError) {
+            console.error('Registration error:', registerError);
+            setError(`Registration error: ${registerError.message || registerError}`);
+            return;
+          }
+          // Automatically log in after registration
+          let response;
+          try {
+            response = await loginUser(formData.email, formData.password);
+            console.log('Login response after registration:', response);
+          } catch (loginError) {
+            console.error('Login error after registration:', loginError);
+            setError(`Login error after registration: ${loginError.message || loginError}`);
+            return;
+          }
+          const token = response.data?.token || response.data || response.token;
+          if (token) {
+            localStorage.setItem('token', token);
+            navigate('/dashboard');
+          } else {
+            setError('Login failed after registration: No token received');
+          }
+        }
+      } catch (err) {
+        setError(err.message || (isLoginMode ? 'Login failed' : 'Registration failed'));
+      }
   };
 
   const toggleMode = () => {
@@ -131,6 +185,11 @@ const AuthPage = () => {
             </button>
           </div>
         </form>
+        {error && (
+          <div className="text-red-600 text-sm mt-4 text-center">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );
