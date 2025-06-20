@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { loginUser } from '../helpers/fetchApi';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here, you would typically send login data to your backend API
-    console.log('Login attempt:', { email, password });
-    // On successful login (e.g., from API response)
-    navigate('/dashboard');
+    setError('');
+    try {
+      const response = await loginUser(email, password);
+      // Assuming token is in response.data.token or response.data
+      const token = response.data?.token || response.data?.token || response.token || response.data;
+      if (token) {
+        localStorage.setItem('token', token);
+        navigate('/dashboard');
+      } else {
+        setError('Login failed: No token received');
+      }
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    }
   };
 
   return (
@@ -55,14 +67,18 @@ const LoginPage = () => {
           </div>
 
           <div>
-              <Link to="/dashboard" ><button
+            <button
               type="submit"
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
             >
               Login
             </button>
-            </Link>
           </div>
+          {error && (
+            <div className="text-red-600 text-sm mt-2 text-center">
+              {error}
+            </div>
+          )}
         </form>
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
