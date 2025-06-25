@@ -21,11 +21,24 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// Logging middleware to log all incoming requests with body
-app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.url} body: ${JSON.stringify(req.body)}`);
+const rawBodySaver = (req, res, buf, encoding) => {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8');
+  }
+};
+
+// Middleware to log raw request body for debugging
+const logRawBody = (req, res, next) => {
+  console.log(`Raw body for ${req.method} ${req.url}:`, req.rawBody);
   next();
-});
+};
+
+// Logging middleware to log all incoming requests with body
+app.use(express.json({
+  verify: rawBodySaver
+}));
+app.use(express.urlencoded({ extended: true, verify: rawBodySaver }));
+app.use(logRawBody);
 dotenv.config({ path: path.join(__dirname, "./.env") });
 
 app.use(cors());
