@@ -1,6 +1,6 @@
 const LIVE_API = false;
 const LIVE_API_URL = 'https://habithubnode';
-const LOCAL_API_URL = 'http://192.168.9.210:8000';
+const LOCAL_API_URL = 'http://192.168.217.210:8000/';
 
 const BASE_URL = LIVE_API ? LIVE_API_URL : LOCAL_API_URL;
 
@@ -37,7 +37,7 @@ async function apiFetch(endpoint, options = {}) {
  * @returns {Promise<object>} - response data including token
  */
 export async function loginUser(email, password) {
-  return apiFetch('/user/login', {
+  return apiFetch('auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
@@ -51,7 +51,7 @@ export async function loginUser(email, password) {
  * @returns {Promise<object>} - response data
  */
 export async function registerUser(name, email, password) {
-  return apiFetch('/user', {
+  return apiFetch('auth/register', {
     method: 'POST',
     body: JSON.stringify({ name, email, password }),
   });
