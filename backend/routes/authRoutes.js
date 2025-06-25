@@ -11,8 +11,7 @@ const bcrypt = require('bcrypt');
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await db_async.Users.create({ name, email, password: hashedPassword });
+const user = await db_async.Users.create({ name, email, password });
     res.status(RESPONSE_CODES.CREATED).json({
       statusCode: RESPONSE_CODES.CREATED,
       httpStatus: RESPONSE_STATUS.SUCCESS,
